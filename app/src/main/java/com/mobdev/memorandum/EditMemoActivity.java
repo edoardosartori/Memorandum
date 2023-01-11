@@ -1,6 +1,7 @@
 package com.mobdev.memorandum;
 
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -9,23 +10,34 @@ import android.widget.Toast;
 import com.google.android.material.button.MaterialButton;
 import com.mobdev.memorandum.model.Memo;
 
-import java.util.UUID;
-
 import io.realm.Realm;
+import io.realm.RealmQuery;
+import io.realm.RealmResults;
+import io.realm.Sort;
 
-public class AddMemoActivity extends AppCompatActivity {
+public class EditMemoActivity extends AppCompatActivity {
+    public Memo memo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_memo);
+        setContentView(R.layout.activity_edit_memo);
+
+        Bundle extras = getIntent().getExtras();
+        String memoId = extras.getString("memo_id");
+
+        Realm.init(getApplicationContext());
+        Realm realm = Realm.getDefaultInstance();
+        memo = realm.where(Memo.class)
+                        .equalTo("id", memoId)
+                        .findFirst();
 
         EditText titleInput = findViewById(R.id.title);
         EditText contentInput = findViewById(R.id.content);
         MaterialButton saveButton = findViewById(R.id.save_button);
 
-        Realm.init(getApplicationContext());
-        Realm realm = Realm.getDefaultInstance();
+        titleInput.setText(memo.getTitle());
+        contentInput.setText(memo.getContent());
 
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -36,18 +48,18 @@ public class AddMemoActivity extends AppCompatActivity {
 
                 if(checkIfValid(title, content)) {
                     realm.beginTransaction();
-                    Memo memo = realm.createObject(Memo.class, UUID.randomUUID().toString());
                     memo.setTitle(title);
                     memo.setContent(content);
                     memo.setCreatedTime(createdTime);
                     memo.setAsActive();
                     realm.commitTransaction();
-                    showToast("Memo has been saved");
+                    showToast("Memo has been updated");
                     finish();
                 }
             }
         });
     }
+
     public boolean checkIfValid(String title, String content) {
         if(title == null || title.trim().length() == 0) {
             showToast("Title field cannot be empty");

@@ -1,13 +1,19 @@
 package com.mobdev.memorandum.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.annotation.NonNull;
 
 import java.text.DateFormat;
 
 import io.realm.Realm;
 import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
 public class Memo extends RealmObject {
+    @PrimaryKey
+    public String id;
     private String title;
     private String content;
     private long createdTime;
@@ -24,6 +30,9 @@ public class Memo extends RealmObject {
     }
 
     // getters
+    public String getId() {
+        return id;
+    }
     public String getTitle() {
         return title;
     }
@@ -69,4 +78,5 @@ public class Memo extends RealmObject {
     public String toString() {
         return "Memo{ created = " + createdTime + '}';
     }
+
 }

@@ -7,4 +7,6 @@
     <string name="content_hint">Add memo\'s Content…</string>
     <string name="save_memo">Save Memo</string>
     <string name="add_memo_header">Adding memo:</string>
+    <string name="edit_memo_header">Editing memo:</string>
+    <string name="update_memo">Update Memo</string>
 </resources>

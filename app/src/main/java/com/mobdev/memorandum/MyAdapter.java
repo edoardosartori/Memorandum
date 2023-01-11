@@ -3,6 +3,7 @@ package com.mobdev.memorandum;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -10,13 +11,9 @@ import android.view.ViewGroup;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.mobdev.memorandum.model.Memo;
-
-import java.text.DateFormat;
-
 import io.realm.Realm;
 import io.realm.RealmResults;
 
@@ -43,10 +40,18 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
         holder.contentOutput.setText(prepareContentPreview(memo.getContent()));
         holder.timeOutput.setText(memo.getFormattedTime());
 
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(context, EditMemoActivity.class);
+                intent.putExtra("memo_id", memo.id);
+                v.getContext().startActivity(intent);
+            }
+        });
+
         holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-
                 PopupMenu menu = new PopupMenu(context, v);
                 menu.getMenu().add("Mark as 'EXPIRED'");
                 menu.getMenu().add("Mark as 'COMPLETED'");
@@ -107,7 +112,6 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder{
-
         TextView titleOutput;
         TextView contentOutput;
         TextView timeOutput;
