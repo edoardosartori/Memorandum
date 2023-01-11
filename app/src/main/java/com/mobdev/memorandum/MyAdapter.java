@@ -40,15 +40,16 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
         Memo memo = memoList.get(position);
         holder.titleOutput.setText(memo.getTitle());
-        holder.contentOutput.setText(memo.getContent());
-        String formattedTime = DateFormat.getDateTimeInstance().format(memo.getCreatedTime());
-        holder.timeOutput.setText(formattedTime);
+        holder.contentOutput.setText(prepareContentPreview(memo.getContent()));
+        holder.timeOutput.setText(memo.getFormattedTime());
 
         holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
 
                 PopupMenu menu = new PopupMenu(context, v);
+                menu.getMenu().add("Mark as 'EXPIRED'");
+                menu.getMenu().add("Mark as 'COMPLETED'");
                 menu.getMenu().add("DELETE");
                 menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
@@ -63,7 +64,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
                                             realm.beginTransaction();
                                             memo.deleteFromRealm();
                                             realm.commitTransaction();
-                                            Toast.makeText(context, "Memo has been deleted", Toast.LENGTH_SHORT).show();
+                                            showToast("Memo has been deleted");
                                         }
                                     })
                                     .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -74,6 +75,21 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
                             AlertDialog alert = builder.create();
                             alert.show();
 
+                        }
+                        else if(item.getTitle().equals("Mark as 'EXPIRED'")) {
+                            Realm realm = Realm.getDefaultInstance();
+                            realm.beginTransaction();
+                            memo.setAsExpired();
+                            realm.commitTransaction();
+                            showToast("Memo has been deleted");
+                            showToast("Memo marked as 'EXPIRED'");
+                        }
+                        else if(item.getTitle().equals("Mark as 'COMPLETED'")) {
+                            Realm realm = Realm.getDefaultInstance();
+                            realm.beginTransaction();
+                            memo.setAsCompleted();
+                            realm.commitTransaction();
+                            showToast("Memo marked as 'COMPLETED'");
                         }
                         return true;
                     }
@@ -102,5 +118,17 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
             contentOutput = itemView.findViewById(R.id.contentOutput);
             timeOutput = itemView.findViewById(R.id.timeOutput);
         }
+    }
+
+    public void showToast(String message){
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+    }
+
+    public String prepareContentPreview(String content) {
+        int maxLength = 40; // max number of chars showed in content preview
+        if(content.length() > maxLength) {
+            content = content.substring(0, maxLength) + "...";
+        }
+        return content;
     }
 }

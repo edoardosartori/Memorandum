@@ -31,15 +31,33 @@ public class AddMemoActivity extends AppCompatActivity {
                 String content = contentInput.getText().toString();
                 long createdTime = System.currentTimeMillis();
 
-                realm.beginTransaction();
-                Memo memo = realm.createObject(Memo.class);
-                memo.setTitle(title);
-                memo.setContent(content);
-                memo.setCreatedTime(createdTime);
-                realm.commitTransaction();
-                Toast.makeText(getApplicationContext(), "Memo has been saved", Toast.LENGTH_SHORT).show();
-                finish();
+                if(checkIfValid(title, content)) {
+                    realm.beginTransaction();
+                    Memo memo = realm.createObject(Memo.class);
+                    memo.setTitle(title);
+                    memo.setContent(content);
+                    memo.setCreatedTime(createdTime);
+                    memo.setAsActive();
+                    realm.commitTransaction();
+                    showToast("Memo has been saved");
+                    finish();
+                }
             }
         });
+    }
+    public boolean checkIfValid(String title, String content) {
+        if(title == null || title.trim().length() == 0) {
+            showToast("Title field cannot be empty");
+            return false;
+        }
+        if(content == null || content.trim().length() == 0) {
+            showToast("Content field cannot be empty");
+            return false;
+        }
+        return true;
+    }
+
+    public void showToast(String message){
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
 }

@@ -65,7 +65,7 @@
             android:textColorHint="@color/dark_white"
             android:hint="@string/content_hint"
             android:background="@color/dark_background"
-            android:inputType="text"/>
+            android:inputType="textMultiLine"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/save_button"

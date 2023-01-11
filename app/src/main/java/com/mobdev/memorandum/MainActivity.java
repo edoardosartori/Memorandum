@@ -39,18 +39,21 @@ public class MainActivity extends AppCompatActivity {
         Realm.init(getApplicationContext());
         Realm realm = Realm.getDefaultInstance();
 
-        RealmResults<Memo> memoList = realm.where(Memo.class).sort("createdTime", Sort.ASCENDING).findAll();
+        RealmResults<Memo> activeMemoList = realm.where(Memo.class)
+                                                .equalTo("status", "ACTIVE")
+                                                .sort("createdTime", Sort.ASCENDING)
+                                                .findAll();
 
         empty_memos_message = findViewById(R.id.empty_memos_view);
         header = findViewById(R.id.header);
         recyclerView = findViewById(R.id.memos_list);
-        setVisibility(memoList);
+        setVisibility(activeMemoList);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        MyAdapter myAdapter = new MyAdapter(MainActivity.this, memoList);
+        MyAdapter myAdapter = new MyAdapter(MainActivity.this, activeMemoList);
         recyclerView.setAdapter(myAdapter);
 
-        memoList.addChangeListener(new RealmChangeListener<RealmResults<Memo>>() {
+        activeMemoList.addChangeListener(new RealmChangeListener<RealmResults<Memo>>() {
             @Override
             public void onChange(RealmResults<Memo> memos) {
                 setVisibility(memos);
@@ -59,8 +62,8 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void setVisibility(RealmResults<Memo> memoList) {
-        if(memoList.size() > 0) {
+    public void setVisibility(RealmResults<Memo> activeMemoList) {
+        if(activeMemoList.size() > 0) {
             empty_memos_message.setVisibility(View.GONE);
             header.setVisibility(View.VISIBLE);
             recyclerView.setVisibility(View.VISIBLE);

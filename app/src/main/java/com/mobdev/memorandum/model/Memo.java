@@ -2,6 +2,8 @@ package com.mobdev.memorandum.model;
 
 import androidx.annotation.NonNull;
 
+import java.text.DateFormat;
+
 import io.realm.Realm;
 import io.realm.RealmObject;
 
@@ -31,6 +33,7 @@ public class Memo extends RealmObject {
     public long getCreatedTime() {
         return createdTime;
     }
+    public String getFormattedTime() {return DateFormat.getDateTimeInstance().format(createdTime); }
     public String getStatus() {return status; }
 
     //setters
@@ -46,9 +49,9 @@ public class Memo extends RealmObject {
 
     //set status
     public void setStatus(String status) { this.status = status; }
-    public void setActive() { this.status = "ACTIVE"; }
-    public void setExpired() { this.status = "EXPIRED"; }
-    public void setCompleted() { this.status = "COMPLETED"; }
+    public void setAsActive() { this.status = "ACTIVE"; }
+    public void setAsExpired() { this.status = "EXPIRED"; }
+    public void setAsCompleted() { this.status = "COMPLETED"; }
 
     //check status
     public boolean isActive() {

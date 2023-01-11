@@ -1,10 +1,10 @@
 <resources>
     <string name="app_name">MyMemos</string>
-    <string name="homepage_header">Active Notes:</string>
+    <string name="homepage_header">Active Memos:</string>
     <string name="add_memo">Add New Memo</string>
     <string name="no_notes">Add your first memo!</string>
     <string name="title_hint">ADD TITLE…</string>
-    <string name="content_hint">Memo\'s Content…</string>
+    <string name="content_hint">Add memo\'s Content…</string>
     <string name="save_memo">Save Memo</string>
     <string name="add_memo_header">Adding memo:</string>
 </resources>
