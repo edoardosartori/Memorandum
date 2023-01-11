@@ -41,13 +41,14 @@
             />
 
         <TextView
-            android:id="@+id/empty_notes_view"
+            android:id="@+id/empty_memos_view"
+            android:visibility="visible"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:text="@string/no_notes"
-            android:textSize="18sp"
-            android:textColor="@color/white"/>
+            android:textColor="@color/white"
+            android:textSize="18sp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/memo_creation_button"

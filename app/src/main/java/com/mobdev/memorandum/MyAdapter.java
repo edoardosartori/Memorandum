@@ -1,6 +1,8 @@
 package com.mobdev.memorandum;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -52,11 +54,26 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
                         if(item.getTitle().equals("DELETE")) {
-                            Realm realm = Realm.getDefaultInstance();
-                            realm.beginTransaction();
-                            memo.deleteFromRealm();
-                            realm.commitTransaction();
-                            Toast.makeText(context, "Memo has been deleted", Toast.LENGTH_SHORT).show();
+                            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                            builder.setMessage("Are you sure you want to delete this memo?")
+                                    .setCancelable(false)
+                                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int id) {
+                                            Realm realm = Realm.getDefaultInstance();
+                                            realm.beginTransaction();
+                                            memo.deleteFromRealm();
+                                            realm.commitTransaction();
+                                            Toast.makeText(context, "Memo has been deleted", Toast.LENGTH_SHORT).show();
+                                        }
+                                    })
+                                    .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int id) {
+                                            dialog.cancel();
+                                        }
+                                    });
+                            AlertDialog alert = builder.create();
+                            alert.show();
+
                         }
                         return true;
                     }

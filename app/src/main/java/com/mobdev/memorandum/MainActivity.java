@@ -1,5 +1,6 @@
 package com.mobdev.memorandum;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -7,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.TextView;
 
 import com.google.android.material.button.MaterialButton;
 import com.mobdev.memorandum.model.Memo;
@@ -17,6 +19,9 @@ import io.realm.RealmResults;
 import io.realm.Sort;
 
 public class MainActivity extends AppCompatActivity {
+    TextView empty_memos_message;
+    TextView header;
+    RecyclerView recyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,16 +41,35 @@ public class MainActivity extends AppCompatActivity {
 
         RealmResults<Memo> memoList = realm.where(Memo.class).sort("createdTime", Sort.ASCENDING).findAll();
 
-        RecyclerView recyclerView = findViewById(R.id.memos_list);
+        empty_memos_message = findViewById(R.id.empty_memos_view);
+        header = findViewById(R.id.header);
+        recyclerView = findViewById(R.id.memos_list);
+        setVisibility(memoList);
+
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        MyAdapter myAdapter = new MyAdapter(getApplicationContext(), memoList);
+        MyAdapter myAdapter = new MyAdapter(MainActivity.this, memoList);
         recyclerView.setAdapter(myAdapter);
 
         memoList.addChangeListener(new RealmChangeListener<RealmResults<Memo>>() {
             @Override
             public void onChange(RealmResults<Memo> memos) {
+                setVisibility(memos);
                 myAdapter.notifyDataSetChanged();
             }
         });
+    }
+
+    public void setVisibility(RealmResults<Memo> memoList) {
+        if(memoList.size() > 0) {
+            empty_memos_message.setVisibility(View.GONE);
+            header.setVisibility(View.VISIBLE);
+            recyclerView.setVisibility(View.VISIBLE);
+        }
+        else {
+            empty_memos_message.setVisibility(View.VISIBLE);
+            header.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.GONE);
+        }
+
     }
 }
