@@ -2,50 +2,46 @@ package com.mobdev.memorandum.model;
 
 import androidx.annotation.NonNull;
 
-public class Memo {
-    private int id;
+import io.realm.Realm;
+import io.realm.RealmObject;
+
+public class Memo extends RealmObject {
     private String title;
     private String content;
-    private long date;
+    private long createdTime;
     private String status;
 
     public Memo() {
     }
 
-    public Memo(String title, String content, long date, String status) {
+    public Memo(String title, String content, long time, String status) {
         this.title = title;
         this.content = content;
-        this.date = date;
+        this.createdTime = time;
         this.status = status;
     }
 
     // getters
-    public int getId() {
-        return id;
-    }
     public String getTitle() {
         return title;
     }
     public String getContent() {
         return content;
     }
-    public long getDate() {
-        return date;
+    public long getCreatedTime() {
+        return createdTime;
     }
     public String getStatus() {return status; }
 
     //setters
-    public void setId(int id) {
-        this.id = id;
-    }
     public void setTitle(String title) {
         this.title = title;
     }
     public void setContent(String content) {
         this.content = content;
     }
-    public void setDate(long date) {
-        this.date = date;
+    public void setCreatedTime(long createdTime) {
+        this.createdTime = createdTime;
     }
 
     //set status
@@ -68,9 +64,6 @@ public class Memo {
     @NonNull
     @Override
     public String toString() {
-        return "Note{" +
-                "id=" + id +
-                ", date=" + date +
-                '}';
+        return "Memo{ created = " + createdTime + '}';
     }
 }

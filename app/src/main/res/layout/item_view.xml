@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="10dp"
+    android:layout_marginBottom="10dp">
+
+    <TextView
+        android:id="@+id/titleOutput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:textColor="@color/white"
+        android:text="My Title"
+        />
+    <TextView
+        android:id="@+id/contentOutput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/titleOutput"
+        android:textColor="@color/white"
+        android:text="My Content"
+        />
+    <TextView
+        android:id="@+id/timeOutput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/contentOutput"
+        android:textSize="12sp"
+        android:textColor="@color/white"
+        android:text="01 Jan 2023"
+        android:gravity="end"
+        />
+</RelativeLayout>
