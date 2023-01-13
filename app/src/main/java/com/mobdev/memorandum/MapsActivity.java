@@ -4,6 +4,8 @@ import androidx.fragment.app.FragmentActivity;
 
 import android.content.Context;
 import android.os.Bundle;
+
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -60,9 +62,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             latLng = memo.getLatLng();
             myMarkerOptions.position(latLng);
             //add the marker to the map
-            Marker marker = mMap.addMarker(myMarkerOptions);
+            mMap.addMarker(myMarkerOptions);
+            builder.include(latLng);
         }
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+        //mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+        if(builder != null) {
+            LatLngBounds bounds = builder.build();
+            int width = getResources().getDisplayMetrics().widthPixels;
+            int height = getResources().getDisplayMetrics().heightPixels;
+            int padding = (int) (width * 0.15); // offset from edges of the map 15% of screen
+            // to animate camera cover all the markers
+            CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding);
+            mMap.animateCamera(cu);
+        }
+        else {
+            latLng = new LatLng(44.7650, 10.3102); // parma
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+        }
     }
 
     public String setContentPreview(String content) {
