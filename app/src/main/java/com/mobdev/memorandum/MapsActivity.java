@@ -36,7 +36,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -55,6 +54,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //adding memos' markers
         LatLng latLng = new LatLng(0,0);
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        int counter = 0;
         for(Memo memo : activeMemoList) {
             MarkerOptions myMarkerOptions = new MarkerOptions();
             myMarkerOptions.title(memo.getTitle());
@@ -63,10 +63,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             myMarkerOptions.position(latLng);
             //add the marker to the map
             mMap.addMarker(myMarkerOptions);
+            counter++;
             builder.include(latLng);
         }
         //mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-        if(builder != null) {
+        if(counter > 0) {
             LatLngBounds bounds = builder.build();
             int width = getResources().getDisplayMetrics().widthPixels;
             int height = getResources().getDisplayMetrics().heightPixels;
@@ -75,8 +76,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding);
             mMap.animateCamera(cu);
         }
-        else {
-            latLng = new LatLng(44.7650, 10.3102); // parma
+        else { // default on Parma
+            latLng = new LatLng(44.7650, 10.3102); // Parma
             mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
         }
     }
