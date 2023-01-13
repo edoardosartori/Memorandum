@@ -18,7 +18,6 @@ import io.realm.Realm;
 import io.realm.RealmResults;
 
 public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
-
     Context context;
     RealmResults<Memo> memoList;
 
@@ -37,7 +36,8 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
         Memo memo = memoList.get(position);
         holder.titleOutput.setText(memo.getTitle());
-        holder.contentOutput.setText(prepareContentPreview(memo.getContent()));
+        holder.contentOutput.setText(setContentPreview(memo.getContent()));
+        holder.locationOutput.setText(setLocality(memo.getLocality()));
         holder.timeOutput.setText(memo.getFormattedTime());
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -114,13 +114,15 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
     public class MyViewHolder extends RecyclerView.ViewHolder{
         TextView titleOutput;
         TextView contentOutput;
+        TextView locationOutput;
         TextView timeOutput;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
-            titleOutput = itemView.findViewById(R.id.titleOutput);
-            contentOutput = itemView.findViewById(R.id.contentOutput);
-            timeOutput = itemView.findViewById(R.id.timeOutput);
+            titleOutput = itemView.findViewById(R.id.title_output);
+            contentOutput = itemView.findViewById(R.id.content_output);
+            locationOutput = itemView.findViewById(R.id.location_output);
+            timeOutput = itemView.findViewById(R.id.time_output);
         }
     }
 
@@ -128,11 +130,19 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
     }
 
-    public String prepareContentPreview(String content) {
-        int maxLength = 40; // max number of chars showed in content preview
+    public String setContentPreview(String content) {
+        int maxLength = 100; // max number of chars showed in content preview
         if(content.length() > maxLength) {
-            content = content.substring(0, maxLength) + "...";
+            return content.substring(0, maxLength) + "...";
         }
         return content;
+    }
+
+    public String setLocality(String locality) {
+        int maxLength = 37; // max number of chars of locality showed
+        if(locality.length() > maxLength) {
+            return locality.substring(0, maxLength) + "...";
+        }
+        return locality;
     }
 }

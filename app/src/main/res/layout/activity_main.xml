@@ -19,9 +19,14 @@
         android:layout_marginTop="55dp"
         android:orientation="vertical">
 
+        <LinearLayout
+            android:id="@+id/header_linear_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
         <TextView
             android:id="@+id/header"
-            android:visibility="gone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/homepage_header"
@@ -29,14 +34,31 @@
             android:textSize="20sp"
             android:textStyle="bold|italic"
             android:layout_margin="10dp"
+            android:layout_gravity="start"
             />
+            <!-- next view is used as spacer -->
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                />
+
+            <ImageButton
+                android:id="@+id/map_button"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@mipmap/map_icon"
+                android:layout_gravity="end"
+                />
+
+        </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/memos_list"
             android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@+id/header"
+            android:layout_below="@+id/header_linear_layout"
             android:layout_above="@+id/memo_creation_button"
             />
 
@@ -64,7 +86,6 @@
             android:textSize="16sp"
             android:backgroundTint="@color/orange"
             app:cornerRadius="12dp"
-            android:onClick="addMemo"
             />
 
     </RelativeLayout>
