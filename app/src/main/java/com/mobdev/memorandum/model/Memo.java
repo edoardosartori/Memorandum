@@ -76,9 +76,9 @@ public class Memo extends RealmObject {
     public void setLongitude(double lng) {
         this.longitude = lng;
     }
-    public void setLatLng(LatLng latLng) {
-        this.latitude = latLng.latitude;
-        this.longitude = latLng.longitude;
+    public void setLatLng(double lat, double lnt) {
+        this.latitude = lat;
+        this.longitude = lnt;
     }
 
     //set status

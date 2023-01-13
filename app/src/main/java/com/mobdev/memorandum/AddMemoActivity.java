@@ -3,6 +3,8 @@ package com.mobdev.memorandum;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
@@ -18,6 +20,7 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.mobdev.memorandum.model.Memo;
@@ -32,7 +35,12 @@ public class AddMemoActivity extends AppCompatActivity {
     EditText titleInput, contentInput;
     MaterialButton saveButton, addLocation;
     String locality;
-    LatLng latLng;
+    String title;
+    String content;
+    long createdTime;
+    double latitude;
+    double longitude;
+    private final static int REQUEST_CODE = 100;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,9 +59,9 @@ public class AddMemoActivity extends AppCompatActivity {
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String title = titleInput.getText().toString();
-                String content = contentInput.getText().toString();
-                long createdTime = System.currentTimeMillis();
+                title = titleInput.getText().toString();
+                content = contentInput.getText().toString();
+                createdTime = System.currentTimeMillis();
 
                 if(checkIfValid(title, content)) {
                     realm.beginTransaction();
@@ -62,7 +70,7 @@ public class AddMemoActivity extends AppCompatActivity {
                     memo.setContent(content);
                     memo.setCreatedTime(createdTime);
                     memo.setLocality(locality);
-                    memo.setLatLng(latLng);
+                    memo.setLatLng(latitude, longitude);
                     memo.setAsActive();
                     realm.commitTransaction();
                     showToast("Memo has been saved");
@@ -74,16 +82,7 @@ public class AddMemoActivity extends AppCompatActivity {
         addLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(ActivityCompat.checkSelfPermission(AddMemoActivity.this,
-                        Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    //permission granted
-                    getLocation();
-
-                } else {
-                    // permission denied
-                    ActivityCompat.requestPermissions(AddMemoActivity.this,
-                            new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 44);
-                }
+                getLastLocation();
             }
         });
     }
@@ -104,50 +103,64 @@ public class AddMemoActivity extends AppCompatActivity {
         return true;
     }
 
-    @SuppressLint("MissingPermission")
-    private void getLocation(){
+    private void getLastLocation() {
+        if(ContextCompat.checkSelfPermission(AddMemoActivity.this,
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            //permission granted
+            fusedLocationProviderClient.getLastLocation()
+                    .addOnSuccessListener(new OnSuccessListener<Location>() {
+                        @Override
+                        public void onSuccess(Location location) {
+                            // initialize location
+                            if(location != null) {
+                                //initialize geoCoder
+                                Geocoder geocoder = new Geocoder(AddMemoActivity.this,
+                                        Locale.getDefault());
+                                try {
+                                    //initialize address list
+                                    List<Address> addresses = geocoder.getFromLocation(
+                                            location.getLatitude(),
+                                            location.getLongitude(),
+                                            1);
 
-        fusedLocationProviderClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
-            @Override
-            public void onComplete(@NonNull Task<Location> task) {
-                // initialize location
-                Location location = task.getResult();
-                if(location != null) {
-                    try {
-                        //initialize geoCoder
-                        Geocoder geocoder = new Geocoder(AddMemoActivity.this,
-                                Locale.getDefault());
-                        //initialize address list
-                        List<Address> addresses = geocoder.getFromLocation(
-                                location.getLatitude(), location.getLongitude(), 1);
+                                    latitude = addresses.get(0).getLatitude();
+                                    longitude = addresses.get(0).getLongitude();
+                                    locality = addresses.get(0).getAddressLine(0);
+                                    showToast("Location has been added");
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            else {
+                                showToast("Location was NULL! Set to default position");
+                                latitude = 44.7650; // Parma set as default
+                                longitude = 10.3102;
+                                locality = "Parco Area Delle Scienze, Parma PR";
+                            }
+                        }
+                    });
 
-                        locality = addresses.get(0).getAddressLine(0);
-                        showToast("locality found is: " + locality);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                else {
-                    showToast("Location was NULL! Set to default position");
-                    Location defaultLocation = new Location(LocationManager.GPS_PROVIDER);
-                    defaultLocation.setLatitude(44.7650);
-                    defaultLocation.setLongitude(10.3102); // Parma
-                    latLng = new LatLng(44.7650, 10.3102);
-                    try {
-                        //initialize geoCoder
-                        Geocoder geocoder = new Geocoder(AddMemoActivity.this,
-                                Locale.getDefault());
-                        //initialize address list
-                        List<Address> addresses = geocoder.getFromLocation(
-                                defaultLocation.getLatitude(), defaultLocation.getLongitude(), 1);
+        } else {
+            // permission denied
+            askPermission();
+        }
+    }
 
-                        locality = addresses.get(0).getAddressLine(0);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        });
+    private void askPermission() {
+        ActivityCompat.requestPermissions(AddMemoActivity.this,
+                new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
+    }
+
+    @SuppressLint("MissingSuperCall")
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if(requestCode == REQUEST_CODE) {
+            if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                getLastLocation();
+        }
+        else {
+            showToast("Permission required!");
+        }
     }
 
     public void showToast(String message){
