@@ -3,7 +3,6 @@ package com.mobdev.memorandum;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
@@ -42,6 +41,7 @@ public class AddMemoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_memo);
 
+        // initialize fusedLocationProviderClient
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         titleInput = findViewById(R.id.title);
         contentInput = findViewById(R.id.content);
@@ -77,7 +77,7 @@ public class AddMemoActivity extends AppCompatActivity {
         addLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getLastLocation();
+                enableUserLocation();
             }
         });
     }
@@ -98,63 +98,69 @@ public class AddMemoActivity extends AppCompatActivity {
         return true;
     }
 
-    private void getLastLocation() {
-        if(ContextCompat.checkSelfPermission(AddMemoActivity.this,
+    private void enableUserLocation() {
+        if(ActivityCompat.checkSelfPermission(AddMemoActivity.this,
                 Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             //permission granted
-            fusedLocationProviderClient.getLastLocation()
-                    .addOnSuccessListener(new OnSuccessListener<Location>() {
-                        @Override
-                        public void onSuccess(Location location) {
-                            // initialize location
-                            if(location != null) {
-                                //initialize geoCoder
-                                Geocoder geocoder = new Geocoder(AddMemoActivity.this,
-                                        Locale.getDefault());
-                                try {
-                                    //initialize address list
-                                    List<Address> addresses = geocoder.getFromLocation(
-                                            location.getLatitude(),
-                                            location.getLongitude(),
-                                            1);
-
-                                    latitude = addresses.get(0).getLatitude();
-                                    longitude = addresses.get(0).getLongitude();
-                                    locality = addresses.get(0).getAddressLine(0);
-                                    showToast("Location has been added");
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                            else {
-                                showToast("Location was NULL! Set to default position");
-                                latitude = 44.7650; // Parma set as default
-                                longitude = 10.3102;
-                                locality = "Parco Area Delle Scienze, Parma PR";
-                            }
-                        }
-                    });
-
-        } else {
-            // permission denied
-            askPermission();
+            getLocationData();
+        } else { // ask for permission
+            if(ActivityCompat.shouldShowRequestPermissionRationale(this, // is this useless?
+                    Manifest.permission.ACCESS_FINE_LOCATION))
+                ActivityCompat.requestPermissions(AddMemoActivity.this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
+            else
+                ActivityCompat.requestPermissions(AddMemoActivity.this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
         }
     }
 
-    private void askPermission() {
-        ActivityCompat.requestPermissions(AddMemoActivity.this,
-                new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
+    @SuppressLint("MissingPermission")
+    private void getLocationData() {
+        fusedLocationProviderClient.getLastLocation()
+                .addOnSuccessListener(new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        if(location != null) {
+                            //initialize geoCoder
+                            Geocoder geocoder = new Geocoder(AddMemoActivity.this,
+                                    Locale.getDefault());
+                            try {
+                                //initialize address list
+                                List<Address> addresses = geocoder.getFromLocation(
+                                        location.getLatitude(),
+                                        location.getLongitude(),
+                                        1);
+
+                                latitude = addresses.get(0).getLatitude();
+                                longitude = addresses.get(0).getLongitude();
+                                locality = addresses.get(0).getAddressLine(0);
+                                showToast("Location has been added");
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        else {
+                            showToast("Retrieving location failed. Set to default position");
+                            latitude = 44.7650; // Parma set as default
+                            longitude = 10.3102;
+                            locality = "Parco Area Delle Scienze, Parma PR";
+                        }
+                    }
+                });
     }
 
     @SuppressLint("MissingSuperCall")
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         if(requestCode == REQUEST_CODE) {
             if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                getLastLocation();
+                //permission granted
+                getLocationData();
         }
         else {
-            showToast("Permission required!");
+            //permission not granted
+            showToast("Failed to grant location permission");
         }
     }
 

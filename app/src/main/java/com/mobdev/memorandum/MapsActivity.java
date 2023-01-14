@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -23,6 +24,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -47,6 +49,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     ActivityMapsBinding binding;
     public FusedLocationProviderClient fusedLocationProviderClient;
     private final static int REQUEST_CODE = 100;
+    private final static int GEOFENCE_RADIUS = 200; // radius of geoFences is 200 meters
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,28 +80,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
 
         //adding memos' markers
-        LatLng latLng = new LatLng(0, 0);
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         int counter = 0;
+
         if (mMap != null) {
-            for (Memo memo : activeMemoList) {
-                MarkerOptions myMarkerOptions = new MarkerOptions();
-                myMarkerOptions.title(memo.getTitle());
-                myMarkerOptions.snippet(setContentPreview(memo));
-                latLng = memo.getLatLng();
-                myMarkerOptions.position(latLng);
-                //add the marker to the map
-                mMap.addMarker(myMarkerOptions);
+            for (Memo memo : activeMemoList) { // add a marker for every active memo
+                LatLng latLng = addMarker(memo);
                 counter++;
                 builder.include(latLng);
             }
-            //mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-            if (counter > 0) {
+            if (counter > 0) { // there are memos to show
                 bounds = builder.build();
                 int width = getResources().getDisplayMetrics().widthPixels;
                 int height = getResources().getDisplayMetrics().heightPixels;
-                int padding = (int) (width * 0.15); // offset from edges of the map 15% of screen
-                // camera animates to cover all the markers
+                int padding = (int) (width * 0.10); // offset from edges of the map 10% of screen
+                // animates camera to cover all the markers, will be 'overwritten' if user grant the location
                 CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding);
                 mMap.animateCamera(cu);
             }
@@ -128,7 +124,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             setCameraOnUserLocation();
 
         } else { // ask for permission
-            if(ActivityCompat.shouldShowRequestPermissionRationale(this,
+            if(ActivityCompat.shouldShowRequestPermissionRationale(this, // is this useless?
                     Manifest.permission.ACCESS_FINE_LOCATION))
             ActivityCompat.requestPermissions(MapsActivity.this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
@@ -136,6 +132,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 ActivityCompat.requestPermissions(MapsActivity.this,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
         }
+    }
+
+    private LatLng addMarker(Memo memo) {
+        MarkerOptions myMarkerOptions = new MarkerOptions();
+        myMarkerOptions.title(memo.getTitle());
+        myMarkerOptions.snippet(setContentPreview(memo));
+        LatLng latLng = memo.getLatLng();
+        myMarkerOptions.position(latLng);
+        // add the marker to the map
+        mMap.addMarker(myMarkerOptions);
+        addCircle(latLng, GEOFENCE_RADIUS);
+        return latLng;
+    }
+
+    private void addCircle(LatLng latLng, float radius) {
+        CircleOptions circleOptions = new CircleOptions();
+        circleOptions.center(latLng);
+        circleOptions.radius(radius);
+        circleOptions.strokeColor(Color.argb(255, 255, 0, 0));
+        circleOptions.fillColor(Color.argb(64, 255, 0, 0));
+        circleOptions.strokeWidth(4);
+        mMap.addCircle(circleOptions);
     }
 
     @SuppressLint({"MissingSuperCall", "MissingPermission"})
@@ -149,11 +167,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 setCameraOnUserLocation();
             }
             else {
-                // not having permission
+                // permission not granted
                 showToast("Failed to grant location permission");
             }
         }
-
     }
 
     public String setContentPreview(Memo memo) {
@@ -171,7 +188,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .addOnSuccessListener(new OnSuccessListener<Location>() {
                 @Override
                 public void onSuccess(Location location) {
-                    // initialize location
                     if(location != null) {
                         //initialize geoCoder
                         Geocoder geocoder = new Geocoder(MapsActivity.this,
