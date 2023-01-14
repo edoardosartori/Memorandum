@@ -5,6 +5,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -13,6 +14,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.Geofence;
@@ -29,16 +31,20 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.mobdev.memorandum.databinding.ActivityMapsBinding;
 import com.mobdev.memorandum.model.Memo;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
+
 import io.realm.Realm;
 import io.realm.RealmResults;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+    private static final String TAG = "MapsActivity";
     Context context;
     LatLngBounds bounds;
     RealmResults<Memo> activeMemoList;
@@ -49,7 +55,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     ActivityMapsBinding binding;
     public FusedLocationProviderClient fusedLocationProviderClient;
     private final static int REQUEST_CODE = 100;
-    private final static int GEOFENCE_RADIUS = 200; // radius of geoFences is 200 meters
+    private final static float GEOFENCE_RADIUS = 200; // radius of geoFences is 200 meters
+    private GeofenceHelper geofenceHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +67,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         // initialize geofencingClient
         geofencingClient = LocationServices.getGeofencingClient(this);
+        // initialize geofenceHelper
+        geofenceHelper = new GeofenceHelper(this);
 
         binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -143,7 +152,33 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // add the marker to the map
         mMap.addMarker(myMarkerOptions);
         addCircle(latLng, GEOFENCE_RADIUS);
+        addGeofence(latLng, GEOFENCE_RADIUS);
         return latLng;
+    }
+
+    @SuppressLint("MissingPermission")
+    private void addGeofence(LatLng latLng, float radius) {
+        String geofenceId = UUID.randomUUID().toString();
+        Geofence geofence = geofenceHelper.getGeofence(geofenceId, latLng, radius,
+                Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_DWELL);
+        GeofencingRequest geofencingRequest = geofenceHelper.getGeofencingRequest(geofence);
+        PendingIntent pendingIntent = geofenceHelper.getPendingIntent();
+
+
+        geofencingClient.addGeofences(geofencingRequest, pendingIntent)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void unused) {
+                        Log.d(TAG, "onSuccess: Geofence added");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        String errorMessage = geofenceHelper.getErrorString(e);
+                        Log.d(TAG, "onFailure: " + errorMessage);
+                    }
+                });
     }
 
     private void addCircle(LatLng latLng, float radius) {
@@ -151,7 +186,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         circleOptions.center(latLng);
         circleOptions.radius(radius);
         circleOptions.strokeColor(Color.argb(255, 255, 0, 0));
-        circleOptions.fillColor(Color.argb(64, 255, 0, 0));
+        circleOptions.fillColor(Color.argb(30, 255, 0, 0));
         circleOptions.strokeWidth(4);
         mMap.addCircle(circleOptions);
     }
@@ -202,7 +237,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             lat = addresses.get(0).getLatitude();
                             lng = addresses.get(0).getLongitude();
                             LatLng latLng = new LatLng(lat, lng);
-                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 12.0f));
+                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 17.0f));
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
