@@ -1,19 +1,13 @@
 package com.mobdev.memorandum;
 
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import com.google.android.material.button.MaterialButton;
 import com.mobdev.memorandum.model.Memo;
-
 import io.realm.Realm;
-import io.realm.RealmQuery;
-import io.realm.RealmResults;
-import io.realm.Sort;
 
 public class EditMemoActivity extends AppCompatActivity {
     public Memo memo;
