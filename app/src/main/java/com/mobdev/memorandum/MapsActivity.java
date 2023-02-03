@@ -39,7 +39,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
-
 import io.realm.Realm;
 import io.realm.RealmResults;
 
@@ -151,6 +150,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         myMarkerOptions.position(latLng);
         // add the marker to the map
         mMap.addMarker(myMarkerOptions);
+        // add geofence
         addCircle(latLng, GEOFENCE_RADIUS);
         addGeofence(latLng, GEOFENCE_RADIUS);
         return latLng;
@@ -160,7 +160,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void addGeofence(LatLng latLng, float radius) {
         String geofenceId = UUID.randomUUID().toString();
         Geofence geofence = geofenceHelper.getGeofence(geofenceId, latLng, radius,
-                Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_DWELL);
+                Geofence.GEOFENCE_TRANSITION_ENTER);
         GeofencingRequest geofencingRequest = geofenceHelper.getGeofencingRequest(geofence);
         PendingIntent pendingIntent = geofenceHelper.getPendingIntent();
 
@@ -169,14 +169,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void unused) {
-                        Log.d(TAG, "onSuccess: Geofence added");
+                        Log.d(TAG, "Success: Geofence added");
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         String errorMessage = geofenceHelper.getErrorString(e);
-                        Log.d(TAG, "onFailure: " + errorMessage);
+                        Log.d(TAG, "Failure: " + errorMessage);
                     }
                 });
     }
