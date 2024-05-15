@@ -5,12 +5,12 @@ buildscript {  // added this whole block
         mavenCentral()
     }
     dependencies {
-        classpath "io.realm:realm-gradle-plugin:10.11.1"
+        classpath "io.realm:realm-gradle-plugin:10.18.0"
     }
 }
 
 plugins {
-    id 'com.android.application' version '7.4.0' apply false
-    id 'com.android.library' version '7.4.0' apply false
+    id 'com.android.application' version '8.1.2' apply false
+    id 'com.android.library' version '8.1.2' apply false
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin' version '2.0.1' apply false
 }
